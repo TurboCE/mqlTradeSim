@@ -106,4 +106,4 @@ def run(bot,in_file,in_config_file,start_timestamp=None,end_timestamp=None,log=T
 
 def execute(bot):
     args = config_parser(bot)
-    run(bot,args.file,"USDCAD.ini")
+    run(bot,args.file,args.config)
