@@ -290,7 +290,7 @@ class mqlTradeBot:
 
     def configure_load(self,fn):
         config = configparser.ConfigParser()
-        config.read("config/"+fn)
+        config.read(fn)
 
         #simulation parameters
         self.current_symbol = config['CURRENCY']['SYMBOL']
