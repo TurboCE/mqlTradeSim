@@ -229,6 +229,7 @@ class orderManager:
 class mqlTradeBot:
     def __init__(self,i_bar_step):
         self.bot_name = "Noname"
+        self.flg_show_log = True
         self.chart = Utility.Chart(i_bar_step*60)
         self.current_time = 0
         self._ask = 0
@@ -309,11 +310,13 @@ class mqlTradeBot:
 
         self._marketinfo_minlot = np.double(config['MARKETINFO']['MINLOT']) # 1/leverage?
         self._marketinfo_maxlot= np.double(config['MARKETINFO']['MAXLOT']) # lot_unit/leverage?
-        self._marketinfo_tickvalue= np.int(config['MARKETINFO']['TICKVALUE']) # my balance currency's rate?
+        self._marketinfo_tickvalue= np.double(config['MARKETINFO']['TICKVALUE']) # my balance currency's rate?
         self._marketinfo_ticksize= np.double(config['MARKETINFO']['TICKSIZE']) # my balance currency's point
 
     #def operator_set_opt(self):
         #empty
+    def set_log(self,opt):
+        self.flg_show_log = opt
 
     def make_report(self):
         cnt = 1
@@ -607,10 +610,7 @@ class mqlTradeBot:
         A part of information about the current security is stored in predefined variables.
         '''
         if i_type == MODE_DIGITS:
-            if s_symbol == "USDCAD":
-                return 5.0
-            else:
-                return 1.0
+            return self.current_symbol_digits
         elif i_type == MODE_MINLOT:    #Minimum permitted amount of a lot
             return self._marketinfo_minlot;
         elif i_type == MODE_MAXLOT:    #Maximum permitted amount of a lot
@@ -1051,7 +1051,8 @@ class mqlTradeBot:
 
     # system
     def Log(self,msg):
-        print(colored("[System] ","green") + colored(self.bot_name,"yellow") + " : "+msg)
+        if self.flg_show_log == True:
+            print(colored("[System] ","green") + colored(self.bot_name,"yellow") + " : "+msg)
 
     # virtual------------------------------------------------------------------
     @abstractmethod
