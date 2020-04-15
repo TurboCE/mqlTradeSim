@@ -1,2 +1,2 @@
 # mqlTradeSim
-mql Simulator
+mql Simulator for python3
