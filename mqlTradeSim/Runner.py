@@ -16,26 +16,30 @@ def config_parser(bot):
     parser = argparse.ArgumentParser(description=bot.bot_name+' Simulator.')
     parser.add_argument('-f','--file',help='input from file')
     parser.add_argument('-c','--config',help='set configure file',required=True)
-    parser.add_argument('-s','--start',help='start time')
-    parser.add_argument('-e','--end',help='end time')
+    parser.add_argument('-s','--start',help='start time',default=None)
+    parser.add_argument('-e','--end',help='end time',default=None)
+    parser.add_argument('-q','--quite',help='disable log',action='store_true',default=False)
+    parser.add_argument('-r','--report',help='Print report (csv format)',action='store_true',default=False)
     args = parser.parse_args()
 
-    if args.start != None:
-        start_timestamp = parse(args.start).timestamp()
-        bot.Log("start from %s (%d)"%(args.start,start_timestamp))
-
-    if args.end != None:
-        end_timestamp = parse(args.end).timestamp()
-        bot.Log("end to %s (%d)"%(args.end,end_timestamp))
     return args
 
-def run(bot,in_file,in_config_file,start_timestamp=None,end_timestamp=None,log=True):
-    #bot = DesirePot.DesirePot()
+def run(bot,in_file,in_config_file,start_datetime=None,end_datetime=None,log=True):
+    bot.set_log(log)
     bot.configure_load(in_config_file)
     timec = Utility.Time()
-
     bot.Log("* Bot Trade Simulator V1.0 (made by mokumoku) *")
     bot.OnInit()
+
+    start_timestamp = end_timestamp = None
+
+    if start_datetime != None:
+        start_timestamp = parse(start_datetime).timestamp()
+        bot.Log("start from %s (%d)"%(start_datetime,start_timestamp))
+
+    if end_datetime != None:
+        end_timestamp = parse(end_datetime).timestamp()
+        bot.Log("end to %s (%d)"%(end_datetime,end_timestamp))
 
     if in_file != None and in_file[-4:] == ".bin":
         filename = in_file
@@ -52,7 +56,7 @@ def run(bot,in_file,in_config_file,start_timestamp=None,end_timestamp=None,log=T
         while 1:
             data = binfile.read(intsize)
             pos = binfile.tell()
-            if data == '':
+            if data == b'':
                 break
             timestamp,bid,ask,bid_vol,ask_vol = struct.unpack('idddd',data)
             #print timestamp,bid,ask,bid_vol,ask_vol
@@ -100,10 +104,12 @@ def run(bot,in_file,in_config_file,start_timestamp=None,end_timestamp=None,log=T
             res = bot.operator_input_tick(timestamp,bid,ask,bid_vol,ask_vol)
             bot.OnTick()
             continue; #---------------------
+
     bot.Log("Total balance : %f"%(bot._acn_balance))
     bot.OnDeinit()
-    bot.make_report()
 
 def execute(bot):
     args = config_parser(bot)
-    run(bot,args.file,args.config)
+    run(bot,args.file,args.config,args.start,args.end,not args.quite)
+    if args.report == True:
+        bot.make_report()
